@@ -1,8 +1,9 @@
-# Order book simultaion
+# Order book simulation
 
-## Personal project
+    **A C++ personal project starting with order book reconstruction and later adding a matching engine.** 
 
-### Current Focus
+
+### Currently working on
 
     Writing the CSV parser to ingest historical market data.
 
