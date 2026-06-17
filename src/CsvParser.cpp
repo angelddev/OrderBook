@@ -6,10 +6,11 @@
 
 std::vector<MarketData::OrderEvent> MarketData::parseCsvFile(std::string filePath){
 
+    std::vector<MarketData::OrderEvent> Info;
     std::ifstream file(filePath);
     if(!file.is_open()){
         std::cout << "Couldn't open file.\n";
-        return;
+        return Info;
     }
 
     std::string line;
@@ -46,5 +47,5 @@ std::vector<MarketData::OrderEvent> MarketData::parseCsvFile(std::string filePat
         cont++;
     }
 
-    return;
+    return Info;
 }
