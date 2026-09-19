@@ -1,4 +1,5 @@
 #include  "../include/CsvParser.h"
+#include  "../include/BookReconstruction.h"
 #include <iostream>
 
 int main(){
@@ -13,5 +14,7 @@ int main(){
         MarketData::OrderEvent temp = Events[i];
         std::cout << "At time " << temp.timestamp << ", there have been "<< temp.amount << " stocks updated with ID: "<< temp.orderId << "\n";
     }
+
+    
 
 }
