@@ -1,20 +1,31 @@
-#include  "../include/CsvParser.h"
-#include  "../include/BookReconstruction.h"
+#include "../include/CsvParser.h"
+#include "../include/BookReconstruction.h"
+
 #include <iostream>
+#include <string>
 
-int main(){
+int main() {
+    const std::string dataPath = "data/OrderBookActions_APPLE.csv";
+    const std::vector<MarketData::OrderEvent> events = MarketData::parseCsvFile(dataPath);
 
-    std::vector<MarketData::OrderEvent> Events = MarketData::parseCsvFile("../data/OrderBookActions_APPLE.csv");
-    if(Events.empty()){
+    if (events.empty()) {
         std::cout << "Couldn't register any events.\n";
-        exit(1);
+        return 1;
     }
 
-    for(int i = 0; i < 5; i++){
-        MarketData::OrderEvent temp = Events[i];
-        std::cout << "At time " << temp.timestamp << ", there have been "<< temp.amount << " stocks updated with ID: "<< temp.orderId << "\n";
+    const std::size_t previewCount = std::min<std::size_t>(10, events.size());
+    std::cout << "Previewing the first " << previewCount << " parsed events:\n";
+
+    for (std::size_t i = 0; i < previewCount; ++i) {
+        const MarketData::OrderEvent& event = events[i];
+        std::cout << "At time " << event.timestamp
+                  << ", eventType=" << static_cast<int>(event.eventType)
+                  << ", orderId=" << event.orderId
+                  << ", amount=" << event.amount
+                  << ", price=" << event.price
+                  << ", direction=" << (event.direction == MarketData::OrderDirection::Buy ? "Buy" : "Sell")
+                  << "\n";
     }
 
-    
-
+    return 0;
 }
