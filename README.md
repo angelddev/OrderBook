@@ -1,21 +1,19 @@
-# Order Book Reconstruction and Simulation
+## Order Book Reconstruction and Simulation
 
-This is a C++ project I've been working on to reconstruct and simulate a limit order book using historical market data. As someone deeply interested in C++ and high-performance systems, my goal here is to build a practical understanding of how electronic markets process incoming orders, handle liquidity, and execute trades in a matching engine.
+This is a C++ project I'm building to replay historical limit-order-book events and study how data structures affect correctness and performance. I'm interested in C++ and high-performance systems, and this project is a step-by-step way to learn how market data represents orders and executions.
 
 
-## Why I built this
+#### Why I built this
 
 As someone passionate about competitive programming and the ICPC, I wanted to take algorithms beyond problem solving and see how they behave inside a real system. I was especially interested in how choosing the right data structures and implementation details can make a measurable difference when processing millions of events.
 
-Finance felt like the perfect environment for that. Market systems constantly process orders, cancellations, and executions while requiring both precision and extremely low latency. This gave me an opportunity to explore not only the algorithms behind an order book, but also the systems side of C++: efficient data and string manipulation, appropriate types, memory usage, headers, CMake, and compilation.
+I felt like Finance is a perfect environment for that. Market systems constantly process orders, cancellations, and executions while requiring both precision and extremely low latency. This gave me an opportunity to explore not only the algorithms behind an order book, but also the systems side of C++: efficient data and string manipulation, appropriate types, memory usage, headers, CMake, and compilation.
 
 The goal is to continuously simulate and benchmark different approaches and actually see how these decisions affect performance at scale.
 
-And what better language to explore that than C++—a language I enjoy for its performance, control, practicality, and elegance?
+And what better language to explore that than C++, a language I enjoy for its performance, control, practicality, and elegance?
 
-So I built a market data matching engine to reconstruct order books from historical events and simulate the matching process, using it as a hands-on way to explore the relationship between algorithmic correctness, precision, and performance.
-
-## Project goals
+#### Project goals
 
 My long-term direction for this system is to:
 
@@ -26,51 +24,57 @@ My long-term direction for this system is to:
 - Build a matching engine for order execution logic.
 - Validate my simulated results against observable market behavior.
 
-## Current status
+#### Current status
 
-Right now, I am focusing on the foundation. I've set up the parsing for the CSV-based market data, written the logic to transform event records into structured C++ objects, and prepared the architecture for the full order book reconstruction.
+The CSV parser reads the full LOBSTER message file, validates the six fields, and stores prices as integer price units and timestamps as integer nanoseconds. The current order-book prototype keeps bid and ask price levels, FIFO order queues, and cached per-price aggregate quantities. It processes submissions, cancellations, deletions, and visible executions; hidden executions do not change displayed liquidity.
 
-## Data source
+Each active order is stored once in the ID index and linked into its price-level FIFO queue. This avoids a second full order copy in the queue and lets known orders be unlinked without scanning every order at that price. Price levels are ordered maps; their aggregate quantities are updated incrementally. These are data-structure choices.
 
-I am using sample market data from the LOBSTER dataset, which provides limit order book event messages for historical trading activity. The files in the data folder contain the event stream for a selected stock, including timestamps, event types, order IDs, order sizes, prices, and side (buy/sell). This is a highly realistic data source for learning how exchange-level event streams are actually represented and consumed.
+This is an incremental prototype, not yet a reconstruction of the complete historical book. Unknown order IDs are reported.
 
-## Architecture (as of now)
+This is roughly what the execution of the program looks like ![alt text](image.png)
 
-The codebase is organized into a few core components:
+#### Data source
 
-- `src/main.cpp` - entry point for the project
-- `src/CsvParser.cpp` - parses market data from CSV files
-- `include/CsvParser.h` - definitions for event structures and parsing logic
-- `include/BookReconstruction.h` - planned order book reconstruction interfaces
+I am using sample market data from the LOBSTER dataset. `OrderBookActions_APPLE.csv` contains timestamped message rows with event type, order ID, size, price, and direction. LOBSTER prices are represented as dollars multiplied by 10,000.
 
-## Roadmap
+#### Architecture
 
-### Phase 1: Data ingestion
+The codebase is organized these components:
+
+- `src/main.cpp` - parses the selected message file, replays its events, and prints a summary
+- `src/CsvParser.cpp` - validates and parses LOBSTER message rows
+- `include/CsvParser.h` - event types, exact market-data types, and parser result
+- `src/BookReconstruction.cpp` - event updates for the prototype order book
+- `include/BookReconstruction.h` - order-book data structures and API
+
+#### Roadmap
+
+##### Phase 1: Data ingestion
 - [x] Set up the C++ project structure
-- [x] Parse basic historical event CSV files while handling edge cases
+- [x] Parse the full message CSV with field and value validation
+- [x] Preserve price units and nanosecond timestamps as integers
 
-### Phase 2: Order book reconstruction
-- [ ] Represent bid and ask side data structures
-- [ ] Reconstruct the book after each event
-- [ ] Track price levels and order quantities
-- [ ] Handle order cancellations and executions
+##### Phase 2: Order book reconstruction
+- [x] Represent bid and ask price levels
+- [x] Track orders by ID and aggregate quantity by price
+- [x] Apply known submissions, cancellations, deletions, and visible executions
+- [ ] Validate the complete book, including queue priority, against reference data
 
-### Phase 3: Replay and simulation
-- [ ] Sequence historical events in time order
-- [ ] Reconstruct book state over the trading day
-- [ ] Add event-driven replay simulation
+##### Phase 3: Replay and simulation
+- [x] Process parsed events in file order
+- [ ] Add replay controls and snapshots over time
 
-### Phase 4: Matching engine
+##### Phase 4: Matching engine
 - [ ] Implement matching logic for incoming orders
-- [ ] Support buy and sell execution rules
-- [ ] Validate execution outcomes against market events
+- [ ] Validate simulated executions against market events
 
-### Phase 5: Analysis and validation
+##### Phase 5: Analysis and validation
 - [ ] Compare reconstructed state vs expected market behavior
 - [ ] Produce summaries of order flow and liquidity dynamics
 - [ ] Document results and engineering choices
 
-## Build and run
+#### Build and run
 
 Requirements:
 
@@ -82,4 +86,7 @@ From the project root:
 ```bash
 cmake -S . -B build
 cmake --build build
-./build/OrderBookExecutable
+./build/OrderBookExecutable [message-csv-path]
+```
+
+If no path is supplied, the executable reads `data/OrderBookActions_APPLE.csv`. Prices printed by the program are raw LOBSTER units: dollars multiplied by 10,000.
