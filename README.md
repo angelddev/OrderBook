@@ -32,7 +32,7 @@ Each active order is stored once in the ID index and linked into its price-level
 
 This is an incremental prototype, not yet a reconstruction of the complete historical book. Unknown order IDs are reported.
 
-This is roughly what the execution of the program looks like ![alt text](image.png)
+This is roughly what the execution of the program looks like ![alt text](images/image.png)
 
 #### Data source
 
